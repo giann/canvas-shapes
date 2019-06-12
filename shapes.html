@@ -135,7 +135,13 @@
                 rotateAngle: 0,
                 translateX:  0,
                 translateY:  0,
-                scaleFactor: 1
+                scaleFactor: 1,
+                gradientStartR: gradientColors[0].r,
+                gradientStartG: gradientColors[0].g,
+                gradientStartB: gradientColors[0].b,
+                gradientEndR: gradientColors[1].r,
+                gradientEndG: gradientColors[1].g,
+                gradientEndB: gradientColors[1].b
             };
 
             // TODO: morph individual points on a smallest scale
@@ -145,8 +151,6 @@
                 y: rect.height * 0.1,
             };
 
-            console.log(translateRange);
-
             let tween;
             tween = () => {
                 new TWEEN.Tween(morph)
@@ -154,13 +158,19 @@
                         rotateAngle: Math.random() * (100 * Math.PI / 180),
                         translateX:  -translateRange.x/2 + Math.random() * translateRange.x/2,
                         translateY:  -translateRange.y/2 + Math.random() * translateRange.y/2,
-                        scaleFactor: 0.5 + Math.random() * 1.3
+                        scaleFactor: 0.7 + Math.random() * 1.3,
+                        gradientStartR: gradientColors[2].r,
+                        gradientStartG: gradientColors[2].g,
+                        gradientStartB: gradientColors[2].b,
+                        gradientEndR: gradientColors[3].r,
+                        gradientEndG: gradientColors[3].g,
+                        gradientEndB: gradientColors[3].b
                     }, 7000 + Math.random() * 15000)
                     .easing(TWEEN.Easing.Quadratic.InOut)
                     .onUpdate(() => {
                         let gradient = ctx.createLinearGradient(minX, minY, maxX, maxY);
-                        gradient.addColorStop(0, gradientColors[0]);
-                        gradient.addColorStop(1, gradientColors[1]);
+                        gradient.addColorStop(0, `rgb(${morph.gradientStartR}, ${morph.gradientStartG}, ${morph.gradientStartB})`);
+                        gradient.addColorStop(1, `rgb(${morph.gradientEndR}, ${morph.gradientEndG}, ${morph.gradientEndB})`);
                         ctx.fillStyle = gradient;
 
                         ctx.save();
@@ -220,14 +230,60 @@
             { cpx: 238, cpy: 55,  cpx2: 233, cpx2: 1,   x: 152, y: 1   },
             { cpx: 70,  cpy: 1,   cpx2: 31,  cpx2: 21,  x: 5,   y: 138 },
             { cpx: -21, cpy: 255, cpx2: 88,  cpx2: 272, x: 179, y: 263 }
-        ], ctx, ['#FF0D77', '#D20073']);
+        ], ctx, [
+            { // #FF0D77
+                r: 255,
+                g: 13,
+                b: 119
+            },
+            { // #D20073
+                r: 210,
+                g: 0,
+                b: 115
+            },
+
+            // To
+            { // #23BBEA
+                r: 35,
+                g: 187,
+                b: 234
+            },
+            { // #003883
+                r: 0,
+                g: 56,
+                b: 131
+            }
+        ]);
 
         startShape([
             { x: 179, y: 304 },
             { cpx: 269, cpy: 296, cpx2: 383, cpy2: 194, x: 332, y: 56  },
             { cpx: 280, cpy: -80, cpx2: 31,  cpy2: 62,  x: 5,   y: 179 },
             { cpx: -21, cpy: 296, cpx2: 88,  cpy2: 313, x: 179, y: 304 }
-        ], ctx, ['#23BBEA', '#003883']);
+        ], ctx, [
+            { // #23BBEA
+                r: 35,
+                g: 187,
+                b: 234
+            },
+            { // #003883
+                r: 0,
+                g: 56,
+                b: 131
+            },
+
+            // To  
+            { // #FF0D77
+                r: 255,
+                g: 13,
+                b: 119
+            },
+            { // #D20073
+                r: 210,
+                g: 0,
+                b: 115
+            }
+        ]);
 
         startShape([
             { x: 150, y: 260 },
@@ -235,7 +291,30 @@
             { cpx: 332, cpy: 29,  cpx2: 150, cpy2: 0,   x: 93,  y: 0   },
             { cpx: 36,  cpy: 0,   cpx2: 1,   cpy2: 82,  x: 1,   y: 146 },
             { cpx: 1,   cpy: 209, cpx2: 93,  cpy2: 260, x: 150, y: 260 }
-        ], ctx, ['#23BBEA', '#003883']);
+        ], ctx, [
+            { // #FF0D77
+                r: 255,
+                g: 13,
+                b: 119
+            },
+            { // #D20073
+                r: 210,
+                g: 0,
+                b: 115
+            },
+
+            // To
+            { // #23BBEA
+                r: 35,
+                g: 187,
+                b: 234
+            },
+            { // #003883
+                r: 0,
+                g: 56,
+                b: 131
+            }
+        ]);
 
         startShape([
             { x: 107, y: 218 },
@@ -243,7 +322,30 @@
             { cpx: 210, cpy: 75,  cpx2: 178, cpy2: 0,   x: 121, y: 0   },
             { cpx: 65,  cpy: 0,   cpx2: 26,  cpy2: 85,  x: 5,   y: 126 },
             { cpx: -16, cpy: 167, cpx2: 55,  cpy2: 231, x: 107, y: 218 },
-        ], ctx, ['#FF0D77', '#D20073']);
+        ], ctx,  [
+            { // #23BBEA
+                r: 35,
+                g: 187,
+                b: 234
+            },
+            { // #003883
+                r: 0,
+                g: 56,
+                b: 131
+            },
+
+            // To  
+            { // #FF0D77
+                r: 255,
+                g: 13,
+                b: 119
+            },
+            { // #D20073
+                r: 210,
+                g: 0,
+                b: 115
+            }
+        ]);
 
         // Start draw loop
         let animate;
