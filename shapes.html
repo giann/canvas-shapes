@@ -1,0 +1,259 @@
+<html>
+    <body style="margin: 0">
+        <canvas></canvas>
+    </body>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/16.3.5/Tween.min.js"></script>
+
+    <script>
+        const translatePolygon = function(dx, dy, polygon) {
+            let translated = [];
+
+            for (let i = 0; i < polygon.length; i++) {
+                translated[i] = {
+                    x: dx + polygon[i].x,
+                    y: dy + polygon[i].y
+                };
+
+                if (polygon[i].cpx) {
+                    translated[i].cpx = dx + polygon[i].cpx;
+                    translated[i].cpy = dy + polygon[i].cpy;
+                }
+
+                if (polygon[i].cpx2) {
+                    translated[i].cpx2 = dx + polygon[i].cpx2;
+                    translated[i].cpy2 = dy + polygon[i].cpy2;
+                }
+            }
+
+            return translated;
+        };
+
+        const rotate = function(point, ox, oy, angle) {
+            let rotated = {
+                x: point.x * Math.cos(angle) - point.y * Math.sin(angle),
+                y: point.x * Math.sin(angle) + point.y * Math.cos(angle)
+            }
+
+            if (point.cpx) {
+                rotated.cpx = point.cpx * Math.cos(angle) - point.cpy * Math.sin(angle);
+                rotated.cpy = point.cpx * Math.sin(angle) + point.cpy * Math.cos(angle);
+            }
+
+            if (point.cpx2) {
+                rotated.cpx2 = point.cpx2 * Math.cos(angle) - point.cpy2 * Math.sin(angle);
+                rotated.cpy2 = point.cpx2 * Math.sin(angle) + point.cpy2 * Math.cos(angle);
+            }
+
+            return rotated;
+        };
+
+        const rotatePolygon = function(ox, oy, angle, polygon) {
+            let rotated = [];
+
+            for (let i = 0; i < polygon.length; i ++) {
+                let pr = rotate(polygon[i], ox, oy, angle);
+
+                rotated[i] = {
+                    x: Math.floor(pr.x),
+                    y: Math.floor(pr.y)
+                };
+
+                if (polygon[i].cpx) {
+                    rotated[i].cpx = Math.floor(pr.cpx);
+                    rotated[i].cpy = Math.floor(pr.cpy);
+                }
+
+                if (polygon[i].cpx2) {
+                    rotated[i].cpx2 = Math.floor(pr.cpx2);
+                    rotated[i].cpy2 = Math.floor(pr.cpy2);
+                }
+            }
+
+            return rotated;
+        };
+
+        const scalePolygon = function(scale, polygon) {
+            let scaled = [];
+
+            for (let i = 0; i < polygon.length; i++) {
+                scaled[i] = {
+                    x: polygon[i].x * scale,
+                    y: polygon[i].y * scale
+                };
+
+                if (polygon[i].cpx) {
+                    scaled[i].cpx = polygon[i].cpx * scale;
+                    scaled[i].cpy = polygon[i].cpy * scale;
+                }
+
+                if (polygon[i].cpx2) {
+                    scaled[i].cpx2 = polygon[i].cpx2 * scale;
+                    scaled[i].cpy2 = polygon[i].cpy2 * scale;
+                }
+            }
+
+            return scaled;
+        };
+
+
+        const canvas = document.querySelector('canvas');
+        const ctx = canvas.getContext('2d');
+        const rect = document.documentElement.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+
+        const startShape = function(polygon, ctx, gradientColors) {
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+
+            polygon = scalePolygon(0.7 + Math.random() * 0.5, polygon);
+            polygon = translatePolygon(Math.random() * rect.width, Math.random() * rect.height, polygon);
+
+            let minX, minY, maxX, maxY;
+            for (let i = 1; i < polygon.length; i++) {
+                if (minX === undefined || polygon[i].x < minX)
+                    minX = polygon[i].x;
+
+                if (maxX === undefined || polygon[i].x > maxX)
+                    maxX = polygon[i].x;
+
+                if (minY === undefined || polygon[i].y < minY)
+                    minY = polygon[i].y;
+
+                if (maxY === undefined || polygon[i].y > maxY)
+                    maxY = polygon[i].y;
+            }
+
+            let center = {
+                x: minX + (maxX - minX)/2,
+                y: minY + (maxY - minY)/2
+            };
+
+            // Tweening
+            let morph = {
+                rotateAngle: 0,
+                translateX:  0,
+                translateY:  0,
+                scaleFactor: 1
+            };
+
+            // TODO: morph individual points on a smallest scale
+
+            const translateRange = {
+                x: rect.width * 0.1,
+                y: rect.height * 0.1,
+            };
+
+            console.log(translateRange);
+
+            let tween;
+            tween = () => {
+                new TWEEN.Tween(morph)
+                    .to({
+                        rotateAngle: Math.random() * (100 * Math.PI / 180),
+                        translateX:  -translateRange.x/2 + Math.random() * translateRange.x/2,
+                        translateY:  -translateRange.y/2 + Math.random() * translateRange.y/2,
+                        scaleFactor: 0.5 + Math.random() * 1.3
+                    }, 7000 + Math.random() * 15000)
+                    .easing(TWEEN.Easing.Quadratic.InOut)
+                    .onUpdate(() => {
+                        let gradient = ctx.createLinearGradient(minX, minY, maxX, maxY);
+                        gradient.addColorStop(0, gradientColors[0]);
+                        gradient.addColorStop(1, gradientColors[1]);
+                        ctx.fillStyle = gradient;
+
+                        ctx.save();
+
+                        // To rotate the shape, first translate to its center
+                        ctx.translate(center.x, center.y);
+                        ctx.rotate(morph.rotateAngle);
+                        ctx.translate(-center.x, -center.y);
+
+                        ctx.translate(morph.translateX, morph.translateY);
+                        ctx.scale(morph.scaleFactor, morph.scaleFactor);
+
+                        // Draw
+                        ctx.filter = 'blur(20px)';
+
+                        ctx.beginPath();
+
+                        ctx.moveTo(polygon[0].x, polygon[0].y)
+
+                        for (let i = 1; i < polygon.length; i++) {
+                            if (polygon[i].cpx) {
+                                if (polygon[i].cpx2)
+                                    ctx.bezierCurveTo(
+                                        polygon[i].cpx, polygon[i].cpy,
+                                        polygon[i].cpx2, polygon[i].cpy2,
+                                        polygon[i].x, polygon[i].y
+                                    );
+                                else
+                                    ctx.quadraticCurveTo(
+                                        polygon[i].cpx, polygon[i].cpy,
+                                        polygon[i].x, polygon[i].y
+                                    );
+                            } else {
+                                ctx.lineTo(polygon[i].x, polygon[i].y);
+                            }
+                        }
+
+                        ctx.closePath();
+                        ctx.fill();
+
+                        ctx.restore();
+                    })
+                    .onComplete(() => {
+                        tween();
+                    })
+                    .start();
+            };
+
+            tween();
+        };
+
+        // Points extracted from svg paths
+
+        startShape([
+            { x: 179, y: 263 },
+            { cpx: 269, cpy: 255, cpx2: 359, cpx2: 221, x: 299, y: 138 },
+            { cpx: 238, cpy: 55,  cpx2: 233, cpx2: 1,   x: 152, y: 1   },
+            { cpx: 70,  cpy: 1,   cpx2: 31,  cpx2: 21,  x: 5,   y: 138 },
+            { cpx: -21, cpy: 255, cpx2: 88,  cpx2: 272, x: 179, y: 263 }
+        ], ctx, ['#FF0D77', '#D20073']);
+
+        startShape([
+            { x: 179, y: 304 },
+            { cpx: 269, cpy: 296, cpx2: 383, cpy2: 194, x: 332, y: 56  },
+            { cpx: 280, cpy: -80, cpx2: 31,  cpy2: 62,  x: 5,   y: 179 },
+            { cpx: -21, cpy: 296, cpx2: 88,  cpy2: 313, x: 179, y: 304 }
+        ], ctx, ['#23BBEA', '#003883']);
+
+        startShape([
+            { x: 150, y: 260 },
+            { cpx: 207, cpy: 260, cpx2: 248, cpy2: 155, x: 290, y: 92  },
+            { cpx: 332, cpy: 29,  cpx2: 150, cpy2: 0,   x: 93,  y: 0   },
+            { cpx: 36,  cpy: 0,   cpx2: 1,   cpy2: 82,  x: 1,   y: 146 },
+            { cpx: 1,   cpy: 209, cpx2: 93,  cpy2: 260, x: 150, y: 260 }
+        ], ctx, ['#23BBEA', '#003883']);
+
+        startShape([
+            { x: 107, y: 218 },
+            { cpx: 159, cpy: 204, cpx2: 210, cpy2: 177, x: 210, y: 126 },
+            { cpx: 210, cpy: 75,  cpx2: 178, cpy2: 0,   x: 121, y: 0   },
+            { cpx: 65,  cpy: 0,   cpx2: 26,  cpy2: 85,  x: 5,   y: 126 },
+            { cpx: -16, cpy: 167, cpx2: 55,  cpy2: 231, x: 107, y: 218 },
+        ], ctx, ['#FF0D77', '#D20073']);
+
+        // Start draw loop
+        let animate;
+
+        animate = function(time) {
+            ctx.clearRect(0, 0, rect.width, rect.height);
+            requestAnimationFrame(animate);
+            TWEEN.update(time);
+        };
+
+        requestAnimationFrame(animate);
+    </script>
+</html>
