@@ -135,7 +135,8 @@
                 rotateAngle: 0,
                 translateX:  0,
                 translateY:  0,
-                scaleFactor: 1,
+                scaleFactorX: 1,
+                scaleFactorY: 1,
                 gradientStartR: gradientColors[0].r,
                 gradientStartG: gradientColors[0].g,
                 gradientStartB: gradientColors[0].b,
@@ -147,8 +148,8 @@
             // TODO: morph individual points on a smallest scale
 
             const translateRange = {
-                x: rect.width * 0.1,
-                y: rect.height * 0.1,
+                x: rect.width * 0.3,
+                y: rect.height * 0.3,
             };
 
             let tween;
@@ -158,7 +159,8 @@
                         rotateAngle: Math.random() * (100 * Math.PI / 180),
                         translateX:  -translateRange.x/2 + Math.random() * translateRange.x/2,
                         translateY:  -translateRange.y/2 + Math.random() * translateRange.y/2,
-                        scaleFactor: 0.7 + Math.random() * 1.3,
+                        scaleFactorX: 0.7 + Math.random() * 1.3,
+                        scaleFactorY: 0.7 + Math.random() * 1.3,
                         gradientStartR: gradientColors[2].r,
                         gradientStartG: gradientColors[2].g,
                         gradientStartB: gradientColors[2].b,
@@ -177,11 +179,11 @@
 
                         // To rotate the shape, first translate to its center
                         ctx.translate(center.x, center.y);
+                        ctx.scale(morph.scaleFactorX, morph.scaleFactorY);
                         ctx.rotate(morph.rotateAngle);
                         ctx.translate(-center.x, -center.y);
 
                         ctx.translate(morph.translateX, morph.translateY);
-                        ctx.scale(morph.scaleFactor, morph.scaleFactor);
 
                         // Draw
                         ctx.filter = 'blur(20px)';
